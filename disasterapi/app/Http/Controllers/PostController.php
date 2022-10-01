@@ -31,12 +31,16 @@ class PostController extends Controller
         ]);
 
         $user = User::where('id', $id)->first();
+        
+        $response = [
+            'id' => $post->id,
+            'name' => $user->name,
+            'date' => $post->created_at->format("M d, Y h:i A"),
+            'caption' => $post->caption,
+            'image' => $post->image
+        ];
 
-
-        return response([
-            'user' => $user,
-            'post' => $post
-        ], 200);
+        return response($response, 200);
     }
 
     public function getPosts(){
