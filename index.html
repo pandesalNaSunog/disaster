@@ -59,22 +59,29 @@
     <title>Document</title>
 </head>
 <body class="bg-light">
-    
-    <div class="card shadow rounded-3 col-lg-2 mx-auto mt-5">
-        <div class="card-body">
-            <div>
-                <input id="email" placeholder="Email" type="text" class="form-control">
-                <div class="invalid-feedback" id="email-error"></div>
+    <div class="container">
+        <div class="text-center mt-5">
+            <img src="logo.jpg" class="rounded-5 shadow col-lg-2 img-fluid">
+            <p class="lead mt-3">Administrator</p>
+        </div>
+        
+        <div class="card shadow rounded-3 col-lg-3 mx-auto mt-5">
+            <div class="card-body">
+                <div>
+                    <input id="email" placeholder="Email" type="text" class="form-control">
+                    <div class="invalid-feedback" id="email-error"></div>
+                </div>
+                <div>
+                    <input id="password" placeholder="Password" type="password" class="form-control mt-3">
+                    <div class="invalid-feedback" id="password-error"></div>
+                </div>
+                
+                <button id="login" class="btn-solid-black mt-3 fw-bold">
+                    Log In
+                </button>
             </div>
-            <div>
-                <input id="password" placeholder="Password" type="password" class="form-control mt-3">
-                <div class="invalid-feedback" id="password-error"></div>
-            </div>
-            
-            <button id="login" class="btn-solid-black mt-3 fw-bold">
-                Log In
-            </button>
         </div>
     </div>
+    
 </body>
 </html>

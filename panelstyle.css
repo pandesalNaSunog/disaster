@@ -1,0 +1,11 @@
+.navigation-links{
+    transition-duration: .1s;
+    border-radius: 10px;
+}
+.navigation-links:hover{
+    background-color: #3B3B3B;
+}
+
+body{
+    background-color: #3B3B3B;
+}
