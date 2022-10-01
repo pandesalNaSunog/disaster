@@ -44,7 +44,7 @@ class PostController extends Controller
     }
 
     public function getPosts(){
-        $posts = Post::all();
+        $posts = Post::all()->orderBy('created_at','desc');
         $response = array();
         foreach($posts as $postItem){
             $userId = $postItem->user_id;
