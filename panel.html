@@ -78,8 +78,72 @@
                                         <p class="lead">${caption}</p>
 
                                         <img src="disasterapi/public/${image}" class="img-fluid">
+                                        <div class="input-group mt-3" style="width: 100%">
+                                            <button value="${id}" class="case-closed col btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                            </svg> Case Closed</button>
+                                            <button value="${id}" class="crew-dispatched col btn btn-outline-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+                                            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                                            </svg> Crew Dispatched</button>
+                                        </div>
                                     </div>
                                 </div>`)
+
+                let caseClosed = postList.children().eq(index).find('.case-closed');
+                let crewDispatched = postList.children().eq(index).find('.crew-dispatched');
+
+
+                if(response == 'case closed'){
+                    caseClosed.removeClass('btn-outline-success');
+                    caseClosed.addClass('btn-success');
+                    crewDispatched.removeClass('btn-primary');
+                    crewDispatched.addClass('btn-outline-primary');
+                }else if(response == 'crew dispatched'){
+                    caseClosed.removeClass('btn-success');
+                    caseClosed.addClass('btn-outline-success');
+                    crewDispatched.addClass('btn-primary');
+                    crewDispatched.removeClass('btn-outline-primary');
+                }
+                
+                caseClosed.on('click', function(){
+                    var postId = $(this).val()
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/updatePostResponse.php',
+                        data:{
+                            post_id: postId,
+                            response: 'case closed'
+                        },
+                        success: function(response){
+                            if(response == 'ok'){
+                                caseClosed.removeClass('btn-outline-success');
+                                caseClosed.addClass('btn-success');
+                                crewDispatched.removeClass('btn-primary');
+                                crewDispatched.addClass('btn-outline-primary');
+                            }
+                        }
+                    })
+                })
+
+                crewDispatched.on('click', function(){
+                    var postId = $(this).val()
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/updatePostResponse.php',
+                        data:{
+                            post_id: postId,
+                            response: 'crew dispatched'
+                        },
+                        success: function(response){
+                            if(response == 'ok'){
+                                caseClosed.removeClass('btn-success');
+                                caseClosed.addClass('btn-outline-success');
+                                crewDispatched.addClass('btn-primary');
+                                crewDispatched.removeClass('btn-outline-primary');
+                            }
+                        }
+                    })
+                })
             }
 
             function getUsers(){
