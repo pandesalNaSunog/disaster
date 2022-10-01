@@ -38,4 +38,32 @@ class PostController extends Controller
             'post' => $post
         ], 200);
     }
+
+    public function getPosts(){
+        $posts = Post::all();
+        $response = array();
+        foreach($posts as $postItem){
+            $userId = $postItem->user_id;
+
+            $user = User::where('id', $userId)->first();
+
+            $userName = $user->name;
+
+            $date = $postItem->created_at->format("M d, Y h:i A");
+
+            $caption = $postItem->caption;
+
+            $image = $postItem->image;
+
+            $response[] = [
+                'id' => $postItem->id,
+                'name' => $userName,
+                'date' => $date,
+                'caption' => $caption,
+                'image' => $image,
+            ];
+        }
+
+        return response($response, 200);
+    }
 }
