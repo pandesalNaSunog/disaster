@@ -1,0 +1,24 @@
+.btn-solid-black{
+    background-color: black;
+    width: 100%;
+    height: auto;
+    padding: 10px;
+    border-radius: 10px;
+    transition-duration: 0.2s;
+    color: white;
+    border-style: none;
+}
+.btn-solid-black:hover{
+    background-color: #3B3B3B;
+}
+
+.btn-solid-black:disabled{
+    opacity: 50%;
+}
+
+@media(min-width: 768px){
+    .btn-solid-black{
+        width: 40%;
+    }
+}
+
