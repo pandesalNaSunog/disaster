@@ -10,6 +10,10 @@ use App\Models\User;
 use App\Models\Barangay;
 class PostController extends Controller
 {
+    public function barangays(){
+        $barangays = Barangay::orderBy('barangay', 'asc')->get();
+        return response($barangays, 200);
+    }
     public function post(Request $request){
         $request->validate([
             'caption' => 'required',

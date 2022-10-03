@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/posts', [PostController::class, 'getPosts']);
+Route::get('/barangays', [PostController::class, 'barangays']);
 Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/post', [PostController::class, 'post']);
     Route::post('/otp', [AuthController::class, 'sendotp']);
