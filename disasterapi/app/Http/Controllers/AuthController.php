@@ -17,8 +17,10 @@ class AuthController extends Controller
             for($i = 0; $i < 6; $i++){
                 $index = rand(0, strlen($characters) - 1);
                 $otp .= $characters[$index];
-                return $otp;
+                
             }
+
+            return $otp;
         }
         $request->validate([
             'name' => 'required',
@@ -27,7 +29,7 @@ class AuthController extends Controller
             'address' => 'required',
             'password' => 'required',
         ]);
-        
+
         $user = User::create([
             'name' => $request['name'],
             'email' => $request['email'],
