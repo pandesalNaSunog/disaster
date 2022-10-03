@@ -70,7 +70,7 @@ class AuthController extends Controller
         $mail->isHTML(true);
 
         $mail->Subject = 'One Time Password';
-        $mail->Body = 'Your OTP is ' . $otpText . ". ";
+        $mail->Body = 'Your OTP is ' . $otpText . ". Note that this can only be used once. Do not close the app or this information will not be valid anymore.";
 
         if(!$mail->send()){
             $user->delete();
