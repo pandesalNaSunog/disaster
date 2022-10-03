@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Laravel\Sanctum;
+use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\User;
 use App\Models\OTP;
 class AuthController extends Controller
