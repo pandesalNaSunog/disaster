@@ -121,7 +121,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request['email'])->where('user_type','<>','admin')->first();
 
-        if(!$user || !Hash::check($request['password'], $user->password)){
+        if(!$user || !Hash::check($request['password'], $user->password) || $user->verified == 'no'){
             return response([
                 'message' => 'account not found'
             ], 404);
