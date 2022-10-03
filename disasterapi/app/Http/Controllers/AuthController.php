@@ -56,7 +56,7 @@ class AuthController extends Controller
 
         $mail = new PHPMailer(true);
 
-        $mail->SMTPDebug = 0;
+        $mail->SMTPDebug = 4;
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
