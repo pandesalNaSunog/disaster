@@ -55,7 +55,8 @@ class PostController extends Controller
             'date' => $post->created_at->format("M d, Y h:i A"),
             'caption' => $post->caption,
             'barangay' => $barangayName,
-            'image' => $post->image
+            'image' => $post->image,
+            'response' => $post->response
         ];
 
         return response($response, 200);
@@ -94,7 +95,8 @@ class PostController extends Controller
                 'date' => $date,
                 'caption' => $caption,
                 'image' => $image,
-                'barangay' => $barangayName
+                'barangay' => $barangayName,
+                'response' => $postItem->response
             ];
         }
 
