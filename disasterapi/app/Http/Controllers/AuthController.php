@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 use App\Models\User;
+use App\Models\OTP;
 class AuthController extends Controller
 {
     public function register(Request $request){
@@ -42,6 +43,12 @@ class AuthController extends Controller
         
         $otpText = generateOtp();
 
+
+        $otp = OTP::create([
+            'user_id' => $user->id,
+            'otp' => $otpText
+        ]);
+
         $mail = new PHPMailer(true);
 
         $mail->SMTPDebug = 0;
@@ -70,6 +77,33 @@ class AuthController extends Controller
         
 
         return response($user, 200);
+    }
+
+    public function sendotp(Request $request){
+        $request->validate([
+            'otp' => 'required'
+        ]);
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $otp = OTP::where('user_id', $id)->where('otp', $request['otp'])->first();
+
+        if(!$otp){
+            return response([
+                'message' => 'invalid otp'
+            ], 400);
+        }
+
+        $user = User::where('id', $id)->first();
+
+        $user->update([
+            'verified' => 'yes'
+        ]);
+
+        return response([
+            'message' => 'ok'
+        ], 200);
     }
 
     public function login(Request $request){

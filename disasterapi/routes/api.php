@@ -19,4 +19,5 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/posts', [PostController::class, 'getPosts']);
 Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/post', [PostController::class, 'post']);
+    Route::post('/otp', [AuthController::class, 'sendotp']);
 });
