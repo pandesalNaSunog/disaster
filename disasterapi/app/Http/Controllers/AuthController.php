@@ -10,6 +10,7 @@ use Laravel\Sanctum;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\User;
 use App\Models\OTP;
+use App\Models\Cred;
 class AuthController extends Controller
 {
     public function register(Request $request){
@@ -32,6 +33,8 @@ class AuthController extends Controller
             'address' => 'required',
             'password' => 'required',
         ]);
+
+        $creds = Cred::where('id', 1)->first();
 
         $user = User::create([
             'name' => $request['name'],
@@ -57,12 +60,12 @@ class AuthController extends Controller
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'exodussearchandrescueinc@gmail.com';
-        $mail->Password = 'etvowxaighslallq';
-        $mail->SMTPSecure = 'ssl';
-        $mail->Port = 465;
+        $mail->Username = $creds->email; 
+        $mail->Password = $creds->key; 
+        $mail->SMTPSecure = $creds->secure; 
+        $mail->Port = $creds->port ;
 
-        $mail->setFrom('exodussearchandrescueinc@gmail.com', 'Exodus Search and Rescue, Inc.');
+        $mail->setFrom($creds->email, 'Exodus Search and Rescue, Inc.');
         $mail->addAddress($request['email']);
         $mail->isHTML(true);
 

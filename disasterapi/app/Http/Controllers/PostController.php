@@ -61,8 +61,13 @@ class PostController extends Controller
         return response($response, 200);
     }
 
-    public function getPosts(){
-        $posts = Post::orderBy('created_at','desc')->get();
+    public function getPosts(Request $request){
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+
+        $posts = Post::where('user_id', $id)->orderBy('created_at','desc')->get();
         $response = array();
         foreach($posts as $postItem){
             $userId = $postItem->user_id;
