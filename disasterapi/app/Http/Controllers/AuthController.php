@@ -42,6 +42,8 @@ class AuthController extends Controller
             'user_type' => 'user',
             'verified' => 'no'
         ]);
+
+        $token = $user->createToken('myAppToken')->plainTextToken;
         
         $otpText = generateOtp();
         $otp = OTP::create([
@@ -76,7 +78,7 @@ class AuthController extends Controller
 
         
 
-        return response($user, 200);
+        return response($token, 200);
     }
 
     public function sendotp(Request $request){
