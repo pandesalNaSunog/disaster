@@ -78,7 +78,9 @@ class AuthController extends Controller
 
         
 
-        return response($token, 200);
+        return response([
+            'token' => $token
+        ], 200);
     }
 
     public function sendotp(Request $request){
