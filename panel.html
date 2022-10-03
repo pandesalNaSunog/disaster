@@ -20,6 +20,62 @@
             let feedLink = $('#feed-link');
             let feedSection = $('#feed-section');
             let postList = $('#post-list');
+            let barangayTable = $('#barangay-table');
+            let addBarangay = $('#add-barangay');
+            let addBarangayError = $('#add-barangay-error');
+            let confirmAddBarangay = $('#confirm-add-barangay');
+            let addBarangayModal = $('#add-barangay-modal');
+            let barangayLink = $('#barangay-link');
+            let barangaySection = $('#barangay-section');
+
+
+            confirmAddBarangay.on('click', function(){
+                if(addBarangay.val() == ""){
+                    addBarangayError.text('Please fill out this field')
+                    addBarangay.addClass('is-invalid');
+                }else{
+                    confirmAddBarangay.prop('disabled', true);
+                    confirmAddBarangay.text('Adding...');
+
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/addbrgy.php',
+                        data:{
+                            barangay: addBarangay.val()
+                        },
+                        success: function(response){
+                            confirmAddBarangay.prop('disabled', false);
+                            confirmAddBarangay.text('Confirm');
+                            notifier.toast('show');
+                            toastMessage.text('New barangay has been added.');
+                            addBarangay.val('');
+                            addBarangayModal.modal('hide');
+
+                            var data = JSON.parse(response);
+
+                            addToBarangayTable(barangayTable.children().length, data.id, data.barangay);
+                        }
+                    })
+                }
+            })
+
+            function addToBarangayTable(index, id, barangay){
+                barangayTable.append(`<tr>
+                                            <td>${barangay}</td>
+                                            <td>
+                                                <button class="btn btn-outline-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                                                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                                                </svg></button>
+
+                                                <button class="btn btn-outline-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                                <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
+                                                </svg></button>
+
+                                                
+                                            </td>
+                                        </tr>`)
+            }
 
             navLink.on('click', function(){
                 navLink.removeClass('active');
@@ -29,12 +85,21 @@
             usersLink.on('click', function(){
                 usersSection.show();
                 feedSection.hide();
+                barangaySection.hide();
                 getUsers();
             })
             feedLink.on('click', function(){
                 usersSection.hide();
                 feedSection.show();
+                barangaySection.hide();
                 getPosts();
+            })
+
+            barangayLink.on('click', function(){
+                usersSection.hide();
+                feedSection.hide();
+                barangaySection.show();
+                getBarangays();
             })
 
 
@@ -43,10 +108,24 @@
             getUsers();
 
             feedSection.hide()
+            barangaySection.hide()
 
 
-
-
+            function getBarangays(){
+                loadingScreen.show();
+                barangayTable.children().remove();
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/barangays.php',
+                    success: function(response){
+                        loadingScreen.hide();
+                        var data = JSON.parse(response);
+                        $(data).each(function(index, value){
+                            addToBarangayTable(index, value.id, value.barangay);
+                        })
+                    }
+                })
+            }
             function getPosts(){
                 loadingScreen.show();
                 postList.children().remove();
@@ -59,13 +138,13 @@
                         var data = JSON.parse(response);
 
                         $(data).each(function(index, value){
-                            addToPostsList(index, value.id, value.user, value.caption, value.image, value.response, value.date);
+                            addToPostsList(index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay);
                         })
                     }
                 })
             }
 
-            function addToPostsList(index, id, user, caption, image, response, date){
+            function addToPostsList(index, id, user, caption, image, response, date, barangay){
                 postList.append(`<div class="text-light card col-lg-6 mx-auto mt-5 bg-dark rounded-3 shadow">
                                     <div class="card-header">
                                         <h4 class="fw-bold">${user.name}</h4>
@@ -73,6 +152,10 @@
                                             <path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/>
                                             <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
                                         </svg><span class="ms-2">${date}</span></span>
+                                        <br>
+                                        <span style="font-size: 15px"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                        </svg><span class="ms-3">${barangay}</span></span>
                                     </div>
                                     <div class="card-body">
                                         <p class="lead">${caption}</p>
@@ -240,6 +323,12 @@
                             <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
                           </svg><span class="ms-3">Users</span></a>
                     </li>
+
+                    <li class="nav-item">
+                        <a href="#" id="barangay-link" class="px-3 navigation-links nav-link mx-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-geo-alt-fill" viewBox="0 0 16 16">
+                            <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                          </svg><span class="ms-3">Barangays</span></a>
+                    </li>
                     <li class="nav-item">
                         <a href="#" id="feed-link" class="px-3 navigation-links nav-link mx-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-newspaper" viewBox="0 0 16 16">
@@ -282,6 +371,53 @@
         </div>
     </section>
 
+    <section id="barangay-section">
+        <div class="container">
+            <div class="col-lg-5 mx-auto card shadow mt-5 rounded-3 bg-dark">
+                <div class="card-header">
+                    <button class="btn btn-light" data-bs-target="#add-barangay-modal" data-bs-toggle="modal">
+                        Add Barangay
+                    </button>
+                    
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped table-hover table-dark">
+                        <thead>
+                            <th scope="col">Barangay</th>
+                            <th scope="col">Actions</th>
+                        </thead>
+                        <tbody id="barangay-table">
+    
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+    </section>
+
+    <div class="modal fade" id="add-barangay-modal" data-bs-backdrop="static"s>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="fw-bold">
+                        Add Barangay
+                    </h4>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <input id="add-barangay" type="text" placeholder="Barangay" class="form-control">
+                        <div class="invalid-feedback" id="add-barangay-error"></div>
+                    </div>
+                    
+                    <button id="confirm-add-barangay" class="btn btn-dark w-100 fw-bold mt-3">
+                        Confirm
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="loading-screen" style="background-color: rgba(0,0,0,0.5);width: 100%; height: 100vh;position: fixed;top:0; left:0; display: flex; justify-content:center; align-items: center;">
         <div class="card rounded-3">

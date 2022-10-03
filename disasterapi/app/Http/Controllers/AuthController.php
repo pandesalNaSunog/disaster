@@ -23,6 +23,7 @@ class AuthController extends Controller
             'address' => $request['address'],
             'password' => bcrypt($request['password']),
             'user_type' => 'user',
+            'verified' => 'no'
         ]);
 
         return response($user, 200);

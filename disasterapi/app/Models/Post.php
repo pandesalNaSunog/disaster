@@ -13,6 +13,7 @@ class Post extends Model
         'user_id',
         'caption',
         'image',
-        'response'
+        'response',
+        'barangay_id'
     ];
 }

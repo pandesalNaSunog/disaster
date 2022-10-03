@@ -13,6 +13,13 @@
             $query = "SELECT name FROM users WHERE id = '$userId'";
             $user = $con->query($query) or die($con->error);
             $userRow = $user->fetch_assoc();
+            $barangayId = $postRow['barangay_id'];
+
+            $query = "SELECT * FROM barangays WHERE id = '$barangayId'";
+            $barangay = $con->query($query) or die($con->error);
+            $barangayRow = $barangay->fetch_assoc();
+
+            $barangayName = $barangayRow['barangay'];
             $posts[] = array(
                 'user' => $userRow,
                 'caption' => $postRow['caption'],
@@ -20,6 +27,7 @@
                 'response' => $postRow['response'],
                 'date' => date_format(date_create($postRow['created_at']), "M d, Y h:i A"),
                 'id' => $postRow['id'],
+                'barangay' => $barangayName
             );
         }
 

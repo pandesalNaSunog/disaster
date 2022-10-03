@@ -7,13 +7,25 @@ use Laravel\Sanctum;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\Barangay;
 class PostController extends Controller
 {
     public function post(Request $request){
         $request->validate([
             'caption' => 'required',
             'image' => 'required',
+            'barangay_id' => 'required'
         ]);
+
+        $barangay = Barangay::where('id', $request['barangay_id'])->first();
+
+        if(!$barangay){
+            return response([
+                'message' => 'this barangay does not exist'
+            ], 400);
+        }
+
+        $barangayName = $barangay->barangay;
 
         $token = PersonalAccessToken::findToken($request->bearerToken());
         $id = $token->tokenable->id;
@@ -27,6 +39,7 @@ class PostController extends Controller
             'user_id' => $id,
             'caption' => $request['caption'],
             'image' => $filename,
+            'barangay_id' => $request['barangay_id'],
             'response' => 'Pending',
         ]);
 
@@ -37,6 +50,7 @@ class PostController extends Controller
             'name' => $user->name,
             'date' => $post->created_at->format("M d, Y h:i A"),
             'caption' => $post->caption,
+            'barangay' => $barangayName,
             'image' => $post->image
         ];
 
@@ -59,12 +73,19 @@ class PostController extends Controller
 
             $image = $postItem->image;
 
+            $barangayId = $postItem->barangay_id;
+
+            $barangay = Barangay::where('id', $barangayId)->first();
+
+            $barangayName = $barangay->barangay;
+
             $response[] = [
                 'id' => $postItem->id,
                 'name' => $userName,
                 'date' => $date,
                 'caption' => $caption,
                 'image' => $image,
+                'barangay' => $barangayName
             ];
         }
 
