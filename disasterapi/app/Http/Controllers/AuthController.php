@@ -44,8 +44,6 @@ class AuthController extends Controller
         ]);
         
         $otpText = generateOtp();
-
-
         $otp = OTP::create([
             'user_id' => $user->id,
             'otp' => $otpText
@@ -102,7 +100,7 @@ class AuthController extends Controller
         $user->update([
             'verified' => 'yes'
         ]);
-
+        $otp->delete();
         return response([
             'message' => 'ok'
         ], 200);
