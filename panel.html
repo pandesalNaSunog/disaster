@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <link rel="stylesheet" href="panelstyle.css">
     <script>
         $(document).ready(function(){
@@ -27,7 +28,51 @@
             let addBarangayModal = $('#add-barangay-modal');
             let barangayLink = $('#barangay-link');
             let barangaySection = $('#barangay-section');
+            let settingsLink = $('#settings-link');
+            let settingsSection = $('#settings-section');
+            let currentPassword = $('#current-password');
+            let confirmCurrentPassword = $("#confirm-current-password");
+            let currentPasswordError = $('#current-password-error');
+            let currentPasswordModal = $('#current-password-modal');
+            let analyticsSection = $('#analytics-section');
+            let analyticsLink = $("#analytics-link");
 
+
+            currentPassword.on('keydown', function(){
+                currentPassword.removeClass('is-invalid');
+            })
+
+            confirmCurrentPassword.on('click', function(){
+                if(currentPassword.val() == ""){
+                    currentPasswordError.text('Please fill out this field');
+                    currentPassword.addClass('is-invalid')
+                }else{
+                    confirmCurrentPassword.text('Please Wait...');
+                    confirmCurrentPassword.prop('disabled', true);
+
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/currentPassword.php',
+                        data:{
+                            password: currentPassword.val(),
+                        },
+                        success: function(response){
+                            confirmCurrentPassword.prop('disabled', false)
+                            confirmCurrentPassword.text('Confirm')
+                            if(response == 'ok'){
+                                currentPasswordModal.modal('hide');
+                                currentPassword.val('');
+                            }else if(response == 'invalid'){
+                                currentPassword.addClass('is-invalid');
+                                currentPasswordError.text('Invalid Password.');
+                            }else{
+                                alert('Session Expired. Please log in to continue.');
+                                window.location.replace('index.html');
+                            }
+                        }
+                    })
+                }
+            })
 
             confirmAddBarangay.on('click', function(){
                 if(addBarangay.val() == ""){
@@ -82,16 +127,72 @@
                 $(this).addClass('active');
             })
 
+            analyticsLink.on('click', function(){
+                usersSection.hide();
+                feedSection.hide();
+                barangaySection.hide();
+                settingsSection.hide();
+                analyticsSection.show();
+
+                getAnalytics();
+            })
+
+            function getAnalytics(){
+                loadingScreen.show();
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/analytics.php',
+                    success: function(response){
+                        loadingScreen.hide()
+                        let data = JSON.parse(response);
+
+                        var barColors = [
+                            "#b91d47",
+                            "#00aba9",
+                            "#2b5797",
+                            "#e8c3b9",
+                            "#1e7145"
+                        ];
+                        var xValues = []
+                        var yValues = []
+                        $(data.total_posts_for_each_barangay).each(function(index, value){
+                            xValues.push(value.barangay_name);
+                            yValues.push(value.number_of_posts);
+                        })
+                        new Chart("myChart", {
+                            type: "pie",
+                            data: {
+                                labels: xValues,
+                                datasets: [{
+                                    backgroundColor: barColors,
+                                    data: yValues
+                                }]
+                            },
+                            options: {
+                                title: {
+                                    display: true,
+                                    text: "Incident Reports For Each Barangay"
+                                }
+                            }
+                        });
+                    }
+                })
+            }
+
             usersLink.on('click', function(){
                 usersSection.show();
                 feedSection.hide();
                 barangaySection.hide();
+                settingsSection.hide();
+                analyticsSection.hide();
                 getUsers();
             })
             feedLink.on('click', function(){
                 usersSection.hide();
                 feedSection.show();
                 barangaySection.hide();
+                settingsSection.hide();
+                analyticsSection.hide();
                 getPosts();
             })
 
@@ -99,8 +200,19 @@
                 usersSection.hide();
                 feedSection.hide();
                 barangaySection.show();
+                settingsSection.hide();
+                analyticsSection.hide();
                 getBarangays();
             })
+
+            settingsLink.on('click', function(){
+                usersSection.hide();
+                feedSection.hide();
+                barangaySection.hide();
+                settingsSection.show();
+                analyticsSection.hide();
+            })
+            
 
 
             session();
@@ -109,7 +221,8 @@
 
             feedSection.hide()
             barangaySection.hide()
-
+            settingsSection.hide()
+            analyticsSection.hide()
 
             function getBarangays(){
                 loadingScreen.show();
@@ -337,15 +450,64 @@
                               </svg><span class="ms-3">Reports</span></a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="px-3 navigation-links nav-link mx-2">
+                        <a href="#" id="analytics-link" class="nav-link navigation-links mx-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z"/>
+                              </svg><span class="ms-3">Analytics</span></a>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" id="settings-link" class="px-3 navigation-links nav-link mx-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
                                 <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
                               </svg><span class="ms-3">Settings</span></a>
                     </li>
+                    
                 </ul>
             </div>
         </div>
     </nav>
+
+    <section id="analytics-section">
+        <div class="container">
+            <div class="card bg-dark col-lg-8 mx-auto rounded-3 shadow mt-5">
+                <div class="card-header">
+                    <h4 class="fw-bold text-light">
+                        Analytics
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <canvas id="myChart" style="width:100%; color: white"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="settings-section">
+        <div class="container">
+            <div class="card bg-dark rounded-3 shadow mt-5">
+                <div class="card-header">
+                    <h4 class="fw-bold text-light">
+                        Account Settings
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <table class="table table-responsive table-hover table-dark">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    Password
+                                </td>
+                                <td>
+                                    <button class="btn btn-secondary" data-bs-target="#current-password-modal" data-bs-toggle="modal">Update Password</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
 
 
     <section id="users-section">
@@ -446,6 +608,30 @@
             
         </div>
     </section>
+
+    <div class="modal fade" data-bs-backdrop="static" id="current-password-modal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h5 class="fw-bold">
+                            Enter Current Password
+                        </h5>
+                    </div>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <input type="text" placeholder="Current Password" class="form-control" id="current-password">
+                        <div class="invalid-feedback" id="current-password-error">
+
+                        </div>
+                        <button id="confirm-current-password" class="btn btn-dark w-100 mt-3">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
 </body>
 </html>
