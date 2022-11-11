@@ -121,7 +121,7 @@
                         success: function(response){
                             generateAnalytics.prop('disabled', false);
                             let data = JSON.parse(response);
-                            displayAnalytics(data.total_posts_for_each_barangay)
+                            displayAnalytics(data.total_posts_for_each_barangay,data.date)
                         }
                     })
                 }
