@@ -36,7 +36,103 @@
             let currentPasswordModal = $('#current-password-modal');
             let analyticsSection = $('#analytics-section');
             let analyticsLink = $("#analytics-link");
+            let analyticsEachBarangay = $('#analytics-each-barangay');
+            let analyticsMonth = $('#analytics-month');
+            let analyticsYear = $('#analytics-year');
+            let generateAnalytics = $('#generate-analytics');
+            let analyticsYearError = $('#analytics-year-error');
+            let barangayPostList = $('#barangay-post-list');
+            let barangayName = $('#barangay-name');
+            let updatePassword = $('#update-password');
+            let updatePasswordError = $('#update-password-error');
+            let retypeUpdatePassword = $('#retype-update-password');
+            let retypeUpdatePasswordError = $('#retype-update-password-error');
+            let confirmUpdatePassword = $('#confirm-update-password');
+            let updatePasswordModal = $('#update-password-modal');
+            let logout = $('#logout');
+            removeInputError(updatePassword);
+            removeInputError(retypeUpdatePassword);
 
+
+            logout.on('click', function(){
+                if(confirm('Are your sure you want to log out?') == true){
+                    $.ajax({
+                        type: 'GET',
+                        url: 'php/logout.php',
+                        success: function(response){
+                            if(response == 'ok'){
+                                window.location.replace('index.html');
+                            }
+                        }
+                    })
+                }
+            })
+
+            confirmUpdatePassword.on('click', function(){
+                if(updatePassword.val() == ""){
+                    updatePassword.addClass('is-invalid');
+                    updatePasswordError.text('Please fill out this field');
+                }else if(retypeUpdatePassword.val() == ""){
+                    retypeUpdatePassword.addClass('is-invalid');
+                    retypeUpdatePasswordError.text('Please fill out this field');
+                }else if(retypeUpdatePassword.val() != updatePassword.val()){
+                    updatePassword.addClass('is-invalid');
+                    updatePasswordError.text('Password Mismatch');
+                }else{
+                    confirmUpdatePassword.prop('disabled', true);
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/updatePassword.php',
+                        data:{
+                            password: updatePassword.val(),
+                        },
+                        success: function(response){
+                            confirmUpdatePassword.prop('disabled', false);
+                            updatePassword.val('');
+                            retypeUpdatePassword.val('');
+                            if(response == 'ok'){
+                                alert('Password successfully changed.');
+                                updatePasswordModal.modal('hide');
+                                updatePassword
+                            
+                            }else{
+                                alert('Session expired. Please log in to continue.')
+                                window.location.replace('index.html');
+                            }
+                        }
+                    })
+                }
+            })
+
+            removeInputError(analyticsYear);
+            generateAnalytics.on('click', function(){
+                if(analyticsYear.val() == ""){
+                    analyticsYear.addClass('is-invalid');
+                    analyticsYearError.text('Please fill out this field');
+                }else{
+                    generateAnalytics.prop('disabled', true);
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/analytics.php',
+                        data:{
+                            year: analyticsYear.val(),
+                            month: analyticsMonth.val(),
+                        },
+                        success: function(response){
+                            generateAnalytics.prop('disabled', false);
+                            let data = JSON.parse(response);
+                            displayAnalytics(data.total_posts_for_each_barangay)
+                        }
+                    })
+                }
+            })
+
+            function removeInputError(input){
+                input.on('keydown', function(){
+                    input.removeClass('is-invalid');
+                })
+                
+            }
 
             currentPassword.on('keydown', function(){
                 currentPassword.removeClass('is-invalid');
@@ -62,6 +158,7 @@
                             if(response == 'ok'){
                                 currentPasswordModal.modal('hide');
                                 currentPassword.val('');
+                                updatePasswordModal.modal('show');
                             }else if(response == 'invalid'){
                                 currentPassword.addClass('is-invalid');
                                 currentPasswordError.text('Invalid Password.');
@@ -116,10 +213,34 @@
                                                 <button class="btn btn-outline-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
                                                 <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
                                                 </svg></button>
-
+                                                <button value="${id}" data-bs-target="#barangay-posts-modal" data-bs-toggle="modal" class="view-reports btn btn-outline-light">View Incident Reports</button>
+                                            
                                                 
                                             </td>
                                         </tr>`)
+                let viewReports = barangayTable.children().eq(index).find('.view-reports');
+
+                viewReports.on('click', function(){
+                    let thisReport = $(this);
+                    barangayPostList.children().remove();
+                    thisReport.prop('disabled', true);
+                    barangayName.text(barangay);
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/posts.php',
+                        data:{
+                            barangay_id: thisReport.val()
+                        },
+                        success: function(response){
+                            viewReports.prop('disabled', false)
+                            let data = JSON.parse(response);
+                            $(data).each(function(index, value){
+                                addToPostsList('barangay-section', index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay)
+                            })
+                            
+                        }
+                    })
+                })
             }
 
             navLink.on('click', function(){
@@ -139,6 +260,7 @@
 
             function getAnalytics(){
                 loadingScreen.show();
+                analyticsEachBarangay.children().remove();
                 $.ajax({
                     type: 'GET',
                     url: 'php/analytics.php',
@@ -146,37 +268,78 @@
                         loadingScreen.hide()
                         let data = JSON.parse(response);
 
-                        var barColors = [
-                            "#b91d47",
-                            "#00aba9",
-                            "#2b5797",
-                            "#e8c3b9",
-                            "#1e7145"
-                        ];
-                        var xValues = []
-                        var yValues = []
-                        $(data.total_posts_for_each_barangay).each(function(index, value){
-                            xValues.push(value.barangay_name);
-                            yValues.push(value.number_of_posts);
-                        })
-                        new Chart("myChart", {
-                            type: "pie",
-                            data: {
-                                labels: xValues,
-                                datasets: [{
-                                    backgroundColor: barColors,
-                                    data: yValues
-                                }]
-                            },
-                            options: {
-                                title: {
-                                    display: true,
-                                    text: "Incident Reports For Each Barangay"
-                                }
-                            }
-                        });
+                        displayAnalytics(data.total_posts_for_each_barangay,data.date)
                     }
                 })
+            }
+
+
+            function displayAnalytics(totalPostsForEachBarangay, date){
+                analyticsEachBarangay.children().remove();
+                var barColors = [
+                    "#b91d47",
+                    "#00aba9",
+                    "#2b5797",
+                    "#e8c3b9",
+                    "#1e7145"
+                ];
+                var xValues = []
+                var yValues = []
+                $(totalPostsForEachBarangay).each(function(index, value){
+                    xValues.push(value.barangay_name);
+                    yValues.push(value.number_of_posts);
+
+                    addToAnalyticsEachBarangay(index, value.id, value.barangay_name, value.number_of_posts, value.case_closed, value.crew_dispatched, value.pending, date)
+                })
+                new Chart("myChart", {
+                    type: "pie",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            backgroundColor: barColors,
+                            data: yValues
+                        }]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: "Overall Incident Reports For Each Barangay as of " + date
+                        }
+                    }
+                });
+            }
+            
+            function addToAnalyticsEachBarangay(index, id, barangayName, numberOfPosts, caseClosedData, crewDispatchedData, pendingData, date){
+                var marginTop = " ";
+                if(index != 0){
+                    marginTop = " mt-3 ";
+                }
+                analyticsEachBarangay.append(`<div class="card${marginTop}shadow rounded-3 bg-dark text-light">
+                                                <div class="card-body">
+                                                    <canvas style="width: 100%" id=${id}>
+                                                </div>
+                                            </div>`)
+                let chart = analyticsEachBarangay.children().eq(index).find('canvas');
+                let xValues = ['Pending','Case Closed','Crew Dispatched'];
+                let yValues = [pendingData, caseClosedData, crewDispatchedData];
+                let barColors = ["#b91d47","#00aba9","#2b5797"];
+                Chart.defaults.global.defaultFontColor = "#fff";
+                new Chart(id, {
+                    type: "pie",
+                    data: {
+                        labels: xValues,
+                        datasets: [{
+                            backgroundColor: barColors,
+                            data: yValues,
+                        }]
+                    },
+                    options: {
+                        title: {
+                            display: true,
+                            text: "Incident Reports for Barangay " + barangayName + " As Of " + date
+                        }
+                    }
+                });
             }
 
             usersLink.on('click', function(){
@@ -251,14 +414,23 @@
                         var data = JSON.parse(response);
 
                         $(data).each(function(index, value){
-                            addToPostsList(index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay);
+                            addToPostsList('post-section',index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay);
                         })
                     }
                 })
             }
 
-            function addToPostsList(index, id, user, caption, image, response, date, barangay){
-                postList.append(`<div class="text-light card col-lg-6 mx-auto mt-5 bg-dark rounded-3 shadow">
+            function addToPostsList(section,index, id, user, caption, image, response, date, barangay){
+                var postContainer;
+                var columnSize;
+                if(section == 'post-section'){
+                    postContainer = postList;
+                    columnSize = " col-lg-6 ";
+                }else{
+                    postContainer = barangayPostList;
+                    columnSize = " ";
+                }
+                postContainer.append(`<div class="text-light card${columnSize}mx-auto mt-5 bg-dark rounded-3 shadow">
                                     <div class="card-header">
                                         <h4 class="fw-bold">${user.name}</h4>
                                         <span style="font-size: 12px"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-event" viewBox="0 0 16 16">
@@ -285,8 +457,8 @@
                                     </div>
                                 </div>`)
 
-                let caseClosed = postList.children().eq(index).find('.case-closed');
-                let crewDispatched = postList.children().eq(index).find('.crew-dispatched');
+                let caseClosed = postContainer.children().eq(index).find('.case-closed');
+                let crewDispatched = postContainer.children().eq(index).find('.crew-dispatched');
 
 
                 if(response == 'case closed'){
@@ -450,7 +622,7 @@
                               </svg><span class="ms-3">Reports</span></a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" id="analytics-link" class="nav-link navigation-links mx-2">
+                        <a href="#" id="analytics-link" class="px-3 nav-link navigation-links mx-2">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-graph-up" viewBox="0 0 16 16">
                                 <path fill-rule="evenodd" d="M0 0h1v15h15v1H0V0Zm14.817 3.113a.5.5 0 0 1 .07.704l-4.5 5.5a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61 4.15-5.073a.5.5 0 0 1 .704-.07Z"/>
                               </svg><span class="ms-3">Analytics</span></a>
@@ -462,6 +634,14 @@
                                 <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
                               </svg><span class="ms-3">Settings</span></a>
                     </li>
+
+                    <li class="nav-item">
+                        <a href="#" id="logout" class="px-3 navigation-links nav-link mx-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                              </svg><span class="ms-3">Log Out</span></a>
+                    </li>
                     
                 </ul>
             </div>
@@ -470,22 +650,57 @@
 
     <section id="analytics-section">
         <div class="container">
-            <div class="card bg-dark col-lg-8 mx-auto rounded-3 shadow mt-5">
-                <div class="card-header">
-                    <h4 class="fw-bold text-light">
-                        Analytics
-                    </h4>
+            <div class="row row-cols-1 g-3 row-cols-lg-2 mt-5">
+                <div class="col">
+                    <div class="card bg-dark text-light shadow rounded-4 shadow">
+                        <div class="card-body">
+                            <div class="form-floating text-dark">
+                                <input type="number" class="form-control" placeholder= "a" id="analytics-year">
+                                <label for="analytics-year">Year</label>
+                                <div class="invalid-feedback" id="analytics-year-error"></div>
+                            </div>
+    
+                            <select id="analytics-month" class="mt-3 form-select">
+                                <option value="01" selected>January</option>
+                                <option value="02">February</option>
+                                <option value="03">March</option>
+                                <option value="04">April</option>
+                                <option value="05">May</option>
+                                <option value="06">June</option>
+                                <option value="07">July</option>
+                                <option value="08">August</option>
+                                <option value="09">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                            <button class="btn btn-secondary w-100 mt-3" id="generate-analytics">Generate Analytics</button>
+                        </div>
+                        
+                        
+                    </div>
+                    <div class="mt-3 card bg-dark mx-auto rounded-3 shadow">
+                        <div class="card-header">
+                            <h4 class="fw-bold text-light">
+                                Analytics
+                            </h4>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="myChart" style="width:100%; height: 50vh;"></canvas>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <canvas id="myChart" style="width:100%; color: white"></canvas>
+                <div class="col" id="analytics-each-barangay">
+
                 </div>
             </div>
+            
         </div>
     </section>
 
     <section id="settings-section">
         <div class="container">
-            <div class="card bg-dark rounded-3 shadow mt-5">
+            <div class="card bg-dark col-lg-6 mx-auto rounded-3 shadow mt-5">
                 <div class="card-header">
                     <h4 class="fw-bold text-light">
                         Account Settings
@@ -609,6 +824,24 @@
         </div>
     </section>
 
+    <div class="modal fade" id="barangay-posts-modal" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-light">
+                    <div class="modal-title">
+                        <h4 class="fw-bold" id="barangay-name"></h4>
+                    </div>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body bg-dark text-light">
+                    <div id="barangay-post-list">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" data-bs-backdrop="static" id="current-password-modal">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -632,6 +865,41 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" data-bs-backdrop="static" id="update-password-modal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h5 class="fw-bold">
+                            Enter New Password
+                        </h5>
+                    </div>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <input type="password" placeholder="New Password" class="form-control" id="update-password">
+                        <div class="invalid-feedback" id="update-password-error">
+
+                        </div>
+                    </div>
+                    <div>
+
+                    
+                        <input type="password" placeholder="Retype New Password" class="form-control" id="retype-update-password">
+                        <div class="invalid-feedback" id="retype-update-password-error">
+
+                        </div>
+                    </div>
+                    <button id="confirm-update-password" class="btn btn-dark w-100 mt-3">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
     
 </body>
 </html>

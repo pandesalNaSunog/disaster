@@ -3,7 +3,14 @@
     if(secured()){
         include('connection.php');
         $con = connect();
-        $query = "SELECT * FROM posts ORDER BY created_at DESC";
+
+        if($_SERVER['REQUEST_METHOD'] == 'GET'){
+            $query = "SELECT * FROM posts ORDER BY created_at DESC";
+        }else{
+            $barangayId = htmlspecialchars($_POST['barangay_id']);
+            $query = "SELECT * FROM posts WHERE barangay_id = '$barangayId' ORDER BY created_at DESC";
+        }
+        
 
         $posts = array();
         $post = $con->query($query) or die($con->error);
