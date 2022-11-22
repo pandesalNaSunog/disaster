@@ -8,9 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCfmT-QA7SbXonWrfaQRNd5l-oraja6MHE"></script>
     <link rel="stylesheet" href="panelstyle.css">
     <script>
         $(document).ready(function(){
+            let globalBarangayId = 0;
             let loadingScreen = $('#loading-screen');
             let usersLink = $('#users-link');
             let navLink = $('.nav-link');
@@ -50,9 +52,78 @@
             let confirmUpdatePassword = $('#confirm-update-password');
             let updatePasswordModal = $('#update-password-modal');
             let logout = $('#logout');
+            let editBarangayInput = $('#edit-barangay-input');
+            let editBarangayError = $('#edit-barangay-error');
+            let confirmEditBarangay = $('#confirm-edit-barangay');
+            let editBarangayModal = $('#edit-barangay-modal');
+            let categoriesSection = $('#categories-section');
+            let categoriesLink = $('#disaster-categories-link');
+            let categoriesTable = $('#categories-table');
+            let addCategoryInput = $('#add-category-input');
+            let addCategoryError = $('#add-category-error');
+            let confirmAddCategory = $('#confirm-add-category');
+            let addCategoryModal = $('#add-category-modal');
+            confirmAddCategory.on('click', function(){
+                if(addCategoryInput.val() == ""){
+                    addCategoryInput.addClass('is-invalid');
+                    addCategoryError.text('Please fill out this field.');
+                }else{
+                    if(confirm("Please Confirm") == true){
+                        confirmAddCategory.prop('disabled', true);
+                        $.post({
+                            url: 'php/addCategory.php',
+                            data:{
+                                category: addCategoryInput.val()
+                            },
+                            success: function(response){
+                                confirmAddCategory.prop('disabled', false);
+                                if(response == 'exists'){
+                                    addCategoryInput.addClass('is-invalid');
+                                    addCategoryError.text('This category already exists. Please create a new one.');
+                                }else{
+                                    addCategoryModal.modal('hide');
+                                    let data = JSON.parse(response);
+                                    addToCategoriesTable(categoriesTable.children().length, data.id, data.category);
+                                }
+                            }
+                        })
+                    }
+                }
+                
+            })
+
+            removeInputError(addCategoryInput);
+
             removeInputError(updatePassword);
             removeInputError(retypeUpdatePassword);
+            removeInputError(editBarangayInput);
 
+            confirmEditBarangay.on('click', function(){
+                if(editBarangayInput.val() == ""){
+                    editBarangayInput.addClass('is-invalid');
+                    editBarangayError.text('Please fill out this field');
+                }else{
+                    if(confirm("Please Confirm Barangay Name: " + editBarangayInput.val()) == true){
+                        confirmEditBarangay.prop('disabled', true);
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/updateBarangay.php',
+                            data:{
+                                id: globalBarangayId,
+                                barangay: editBarangayInput.val()
+                            },
+                            success: function(response){
+                                confirmEditBarangay.prop('disabled', false);
+                                if(response == 'ok'){
+                                    editBarangayInput.val('');
+                                    editBarangayModal.modal('hide');
+                                    getBarangays()
+                                }
+                            }
+                        })
+                    }
+                }
+            })
 
             logout.on('click', function(){
                 if(confirm('Are your sure you want to log out?') == true){
@@ -205,12 +276,12 @@
                 barangayTable.append(`<tr>
                                             <td>${barangay}</td>
                                             <td>
-                                                <button class="btn btn-outline-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                                                <button value="${id}" data-bs-target="#edit-barangay-modal" data-bs-toggle="modal" class="edit btn btn-outline-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                                                 <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
                                                 <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
                                                 </svg></button>
 
-                                                <button class="btn btn-outline-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
+                                                <button value="${id}" class="delete btn btn-outline-light"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16">
                                                 <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5Zm-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5ZM4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06Zm6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528ZM8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5Z"/>
                                                 </svg></button>
                                                 <button value="${id}" data-bs-target="#barangay-posts-modal" data-bs-toggle="modal" class="view-reports btn btn-outline-light">View Incident Reports</button>
@@ -219,7 +290,32 @@
                                             </td>
                                         </tr>`)
                 let viewReports = barangayTable.children().eq(index).find('.view-reports');
+                let deleteButton = barangayTable.children().eq(index).find('.delete');
+                let editBarangay = barangayTable.children().eq(index).find('.edit');
 
+                editBarangay.on('click', function(){
+                    globalBarangayId = $(this).val();
+                    editBarangayInput.val(barangay);
+                })
+                deleteButton.on('click', function(){
+                    let thisDelete = $(this);
+                    if(confirm("Delete this barangay?") == true){
+                        deleteButton.prop('disabled', true);
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/deleteBarangay.php',
+                            data:{
+                                id: thisDelete.val(),
+                            },
+                            success: function(reponse){
+                                deleteButton.prop('disabled', false)
+                                if(response == 'ok'){
+                                    thisDelete.parent().parent().remove();
+                                }
+                            }
+                        })
+                    }
+                })
                 viewReports.on('click', function(){
                     let thisReport = $(this);
                     barangayPostList.children().remove();
@@ -235,7 +331,7 @@
                             viewReports.prop('disabled', false)
                             let data = JSON.parse(response);
                             $(data).each(function(index, value){
-                                addToPostsList('barangay-section', index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay)
+                                addToPostsList('barangay-section', index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay, value.lat, value.long)
                             })
                             
                         }
@@ -254,7 +350,7 @@
                 barangaySection.hide();
                 settingsSection.hide();
                 analyticsSection.show();
-
+                categoriesSection.hide();
                 getAnalytics();
             })
 
@@ -289,7 +385,7 @@
                     xValues.push(value.barangay_name);
                     yValues.push(value.number_of_posts);
 
-                    addToAnalyticsEachBarangay(index, value.id, value.barangay_name, value.number_of_posts, value.case_closed, value.crew_dispatched, value.pending, date)
+                    addToAnalyticsEachBarangay(index, value.id, value.barangay_name, value.number_of_posts, value.case_closed, value.crew_dispatched, value.pending, date, value.data_for_each_disaster_category);
                 })
                 new Chart("myChart", {
                     type: "pie",
@@ -309,21 +405,58 @@
                 });
             }
             
-            function addToAnalyticsEachBarangay(index, id, barangayName, numberOfPosts, caseClosedData, crewDispatchedData, pendingData, date){
+            function addToAnalyticsEachBarangay(index, id, barangayName, numberOfPosts, caseClosedData, crewDispatchedData, pendingData, date, dataForEachDisasterCategory){
+                
                 var marginTop = " ";
                 if(index != 0){
                     marginTop = " mt-3 ";
                 }
                 analyticsEachBarangay.append(`<div class="card${marginTop}shadow rounded-3 bg-dark text-light">
                                                 <div class="card-body">
-                                                    <canvas style="width: 100%" id=${id}>
+                                                    <div class="row row-cols-1 row-cols-lg-2">
+                                                        <div class="col">
+                                                            <canvas class="status" style="width: 100%; height: 400px" id=${id}>
+                                                        </div>
+                                                        <div class="col">
+                                                            <canvas class="categories" style="width: 100%; height: 400px" id=${id + 'e'}>
+                                                        </div>
+                                                    </div>
+                                                    
                                                 </div>
                                             </div>`)
-                let chart = analyticsEachBarangay.children().eq(index).find('canvas');
+                let chart = analyticsEachBarangay.children().eq(index).find('.status');
+                let categorChart = analyticsEachBarangay.children().eq(index).find('.categories');
                 let xValues = ['Pending','Case Closed','Crew Dispatched'];
                 let yValues = [pendingData, caseClosedData, crewDispatchedData];
                 let barColors = ["#b91d47","#00aba9","#2b5797"];
+
+                let categoriesXvalues = [];
+                let categoryDataYvalues = [];
+                let categoryColors = [];
+                $(dataForEachDisasterCategory).each(function(index, value){
+                    categoriesXvalues.push(value.category);
+                    categoryDataYvalues.push(value.data);
+                    categoryColors.push(value.color)
+                })
+
                 Chart.defaults.global.defaultFontColor = "#fff";
+
+                new Chart(id + 'e', {
+                    type: 'pie',
+                    data:{
+                        labels: categoriesXvalues,
+                        datasets:[{
+                            backgroundColor: categoryColors,
+                            data: categoryDataYvalues
+                        }]
+                    },
+                    options:{
+                        title:{
+                            display: true,
+                            text: "Incident Types For Barangay " + barangayName + " As Of " + date
+                        }
+                    }
+                });
                 new Chart(id, {
                     type: "pie",
                     data: {
@@ -342,12 +475,23 @@
                 });
             }
 
+            categoriesLink.on('click', function(){
+                usersSection.hide();
+                feedSection.hide();
+                barangaySection.hide();
+                settingsSection.hide();
+                analyticsSection.hide();
+                categoriesSection.show()
+                getCategories();
+            })
+
             usersLink.on('click', function(){
                 usersSection.show();
                 feedSection.hide();
                 barangaySection.hide();
                 settingsSection.hide();
                 analyticsSection.hide();
+                categoriesSection.hide()
                 getUsers();
             })
             feedLink.on('click', function(){
@@ -356,6 +500,7 @@
                 barangaySection.hide();
                 settingsSection.hide();
                 analyticsSection.hide();
+                categoriesSection.hide()
                 getPosts();
             })
 
@@ -365,6 +510,7 @@
                 barangaySection.show();
                 settingsSection.hide();
                 analyticsSection.hide();
+                categoriesSection.hide()
                 getBarangays();
             })
 
@@ -374,6 +520,7 @@
                 barangaySection.hide();
                 settingsSection.show();
                 analyticsSection.hide();
+                categoriesSection.hide()
             })
             
 
@@ -386,7 +533,7 @@
             barangaySection.hide()
             settingsSection.hide()
             analyticsSection.hide()
-
+            categoriesSection.hide()
             function getBarangays(){
                 loadingScreen.show();
                 barangayTable.children().remove();
@@ -402,6 +549,29 @@
                     }
                 })
             }
+            function getCategories(){
+                loadingScreen.show()
+                categoriesTable.children().remove();
+                $.get({
+                    url: 'php/categories.php',
+                    success: function(response){
+                        let data = JSON.parse(response);
+                        loadingScreen.hide();
+                        $(data).each(function(index, value){
+                            addToCategoriesTable(index, value.id, value.category)
+                        })
+                    }
+                })
+            }
+
+            function addToCategoriesTable(index, id, category){
+                categoriesTable.append(`<tr>
+                                            <td>${category}</td>
+                                            <td>
+
+                                            </td>
+                                        </tr>`)
+            }
             function getPosts(){
                 loadingScreen.show();
                 postList.children().remove();
@@ -414,23 +584,22 @@
                         var data = JSON.parse(response);
 
                         $(data).each(function(index, value){
-                            addToPostsList('post-section',index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay);
+                            addToPostsList('post-section',index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay,value.lat, value.long);
                         })
                     }
                 })
             }
 
-            function addToPostsList(section,index, id, user, caption, image, response, date, barangay){
+            function addToPostsList(section,index, id, user, caption, image, response, date, barangay, lat, long){
                 var postContainer;
-                var columnSize;
                 if(section == 'post-section'){
                     postContainer = postList;
-                    columnSize = " col-lg-6 ";
                 }else{
                     postContainer = barangayPostList;
-                    columnSize = " ";
+
                 }
-                postContainer.append(`<div class="text-light card${columnSize}mx-auto mt-5 bg-dark rounded-3 shadow">
+                postContainer.append(`<div class="col">
+                                        <div class="text-light card mx-auto mt-5 bg-dark rounded-3 shadow">
                                     <div class="card-header">
                                         <h4 class="fw-bold">${user.name}</h4>
                                         <span style="font-size: 12px"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-calendar-event" viewBox="0 0 16 16">
@@ -443,9 +612,11 @@
                                         </svg><span class="ms-3">${barangay}</span></span>
                                     </div>
                                     <div class="card-body">
-                                        <p class="lead">${caption}</p>
+                                        <div id="${id}" style="width:100%;height:200px;"></div>
+                                        
+                                        <p class="lead mt-3">${caption}</p>
 
-                                        <img src="disasterapi/public/${image}" class="img-fluid">
+                                        <div class="text-center"><img src="disasterapi/public/${image}" class="img-fluid"></div>
                                         <div class="input-group mt-3" style="width: 100%">
                                             <button value="${id}" class="case-closed col btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
                                             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
@@ -455,11 +626,25 @@
                                             </svg> Crew Dispatched</button>
                                         </div>
                                     </div>
+                                    
+                                </div>
                                 </div>`)
 
                 let caseClosed = postContainer.children().eq(index).find('.case-closed');
                 let crewDispatched = postContainer.children().eq(index).find('.crew-dispatched');
+                
+                function myMap() {
+                    var mapProp= {
+                        center:new google.maps.LatLng(lat,long),
+                        zoom:5,
+                    };
 
+                    var marker = new google.maps.Marker({position: new google.maps.LatLng(lat, long)});
+                    var map = new google.maps.Map(document.getElementById(id),mapProp);
+                    marker.setMap(map)
+                }
+
+                myMap()
 
                 if(response == 'case closed'){
                     caseClosed.removeClass('btn-outline-success');
@@ -587,8 +772,8 @@
     <title>Administrator</title>
 </head>
 <body>
-    <nav class="sticky-top shadow navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
+   
+    <nav class="sticky-top shadow navbar navbar-expand-lg navbar-dark bg-dark px-3">
             <div class="navbar-brand d-flex align-items-center">
                 <img src="logo.jpg" class="img-fluid shadow rounded-3" style="height: 50px; width: 50px" alt="">
                 <h5 class="fw-bold ms-4">
@@ -634,6 +819,12 @@
                                 <path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z"/>
                               </svg><span class="ms-3">Settings</span></a>
                     </li>
+                    <li class="nav-item">
+                        <a href="#" id="disaster-categories-link" class="px-3 navigation-links nav-link mx-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-lightning-fill" viewBox="0 0 16 16">
+                                <path d="M7.053 11.276A.5.5 0 0 1 7.5 11h1a.5.5 0 0 1 .474.658l-.28.842H9.5a.5.5 0 0 1 .39.812l-2 2.5a.5.5 0 0 1-.875-.433L7.36 14H6.5a.5.5 0 0 1-.447-.724l1-2zm6.352-7.249a5.001 5.001 0 0 0-9.499-1.004A3.5 3.5 0 1 0 3.5 10H13a3 3 0 0 0 .405-5.973z"/>
+                              </svg><span class="ms-3">Disaster Categories</span></a>
+                    </li>
 
                     <li class="nav-item">
                         <a href="#" id="logout" class="px-3 navigation-links nav-link mx-2">
@@ -645,12 +836,11 @@
                     
                 </ul>
             </div>
-        </div>
     </nav>
 
     <section id="analytics-section">
         <div class="container">
-            <div class="row row-cols-1 g-3 row-cols-lg-2 mt-5">
+            <div class="row row-cols-1 row-cols-lg-2 mt-5">
                 <div class="col">
                     <div class="card bg-dark text-light shadow rounded-4 shadow">
                         <div class="card-body">
@@ -695,6 +885,32 @@
                 </div>
             </div>
             
+        </div>
+    </section>
+
+    <section id="categories-section">
+        <div class="container">
+            <div class="card bg-dark col-lg-6 mx-auto rounded-3 shadow mt-5">
+                <div class="card-header d-flex justify-content-between">
+                    <h3 class="text-light fw-bold">
+                        Disaster Categories
+                    </h3>
+                    <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#add-category-modal">Add Disaster Category</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover table-dark">
+                            <thead>
+                                <th scope="col">Category</th>
+                                <th scope="col">Actions</th>
+                            </thead>
+                            <tbody id="categories-table">
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -773,6 +989,50 @@
         
     </section>
 
+    <div class="modal fade" data-bs-backdrop="static" id="edit-barangay-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h3 class="fw-bold">
+                            Edit Barangay
+                        </h3>
+                    </div>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <input type="text" id="edit-barangay-input" class="form-control" placeholder="Barangay">
+                        <div class="invalid-feedback" id="edit-barangay-error"></div>
+                    </div>
+                    <button class="btn btn-dark w-100 mt-3" id="confirm-edit-barangay">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" data-bs-backdrop="static" id="add-category-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h3 class="fw-bold">
+                            Add Disaster Category
+                        </h3>
+                    </div>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <input type="text" id="add-category-input" class="form-control" placeholder="Category">
+                        <div class="invalid-feedback" id="add-category-error"></div>
+                    </div>
+                    <button class="btn btn-dark w-100 mt-3" id="confirm-add-category">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="add-barangay-modal" data-bs-backdrop="static"s>
         <div class="modal-dialog">
             <div class="modal-content">
@@ -817,8 +1077,8 @@
 
     <section id="feed-section">
         <div class="container">
-            <div id="post-list">
-
+            <div id="post-list" class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                
             </div>
             
         </div>

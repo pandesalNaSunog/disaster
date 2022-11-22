@@ -8,17 +8,26 @@ use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Barangay;
+use App\Models\DisasterCategory;
 class PostController extends Controller
 {
     public function barangays(){
         $barangays = Barangay::orderBy('barangay', 'asc')->get();
         return response($barangays, 200);
     }
+
+    public function categories(){
+        $categories = DisasterCategory::orderBy('category', 'asc')->get();
+        return response($categories, 200);
+    }
     public function post(Request $request){
         $request->validate([
             'caption' => 'required',
             'image' => 'required',
-            'barangay_id' => 'required'
+            'barangay_id' => 'required',
+            'disaster_category_id' => 'required',
+            'lat' => 'required',
+            'long' => 'required'
         ]);
 
         $barangay = Barangay::where('id', $request['barangay_id'])->first();
@@ -26,6 +35,14 @@ class PostController extends Controller
         if(!$barangay){
             return response([
                 'message' => 'this barangay does not exist'
+            ], 400);
+        }
+
+        $disasterCategory = DisasterCategory::where('id', $request['disaster_category_id'])->first();
+
+        if(!$disasterCategory){
+            return response([
+                'message' => 'this category does not exist'
             ], 400);
         }
 
@@ -45,6 +62,9 @@ class PostController extends Controller
             'image' => $filename,
             'barangay_id' => $request['barangay_id'],
             'response' => 'Pending',
+            'disaster_category_id' => $request['disaster_category_id'],
+            'lat' => $request['lat'],
+            'long' => $request['long']
         ]);
 
         $user = User::where('id', $id)->first();
@@ -56,7 +76,9 @@ class PostController extends Controller
             'caption' => $post->caption,
             'barangay' => $barangayName,
             'image' => $post->image,
-            'response' => $post->response
+            'response' => $post->response,
+            'lat' => $post->lat,
+            'long' => $post->long
         ];
 
         return response($response, 200);
@@ -87,7 +109,12 @@ class PostController extends Controller
 
             $barangay = Barangay::where('id', $barangayId)->first();
 
-            $barangayName = $barangay->barangay;
+            if($barangy){
+                $barangayName = $barangay->barangay;
+            }else{
+                $barangayName = "Unknown Barangay";
+            }
+            
 
             $response[] = [
                 'id' => $postItem->id,

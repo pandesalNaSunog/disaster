@@ -24,9 +24,13 @@
 
             $query = "SELECT * FROM barangays WHERE id = '$barangayId'";
             $barangay = $con->query($query) or die($con->error);
-            $barangayRow = $barangay->fetch_assoc();
+            if($barangayRow = $barangay->fetch_assoc()){
+                $barangayName = $barangayRow['barangay'];
+            }else{
+                $barangayName = "Unknown Barangay";
+            }
 
-            $barangayName = $barangayRow['barangay'];
+            
             $posts[] = array(
                 'user' => $userRow,
                 'caption' => $postRow['caption'],
@@ -34,7 +38,9 @@
                 'response' => $postRow['response'],
                 'date' => date_format(date_create($postRow['created_at']), "M d, Y h:i A"),
                 'id' => $postRow['id'],
-                'barangay' => $barangayName
+                'barangay' => $barangayName,
+                'lat' => $postRow['lat'],
+                'long' => $postRow['long']
             );
         }
 

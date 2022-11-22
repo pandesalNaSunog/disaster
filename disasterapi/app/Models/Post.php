@@ -14,6 +14,9 @@ class Post extends Model
         'caption',
         'image',
         'response',
-        'barangay_id'
+        'barangay_id',
+        'disaster_category_id',
+        'lat',
+        'long'
     ];
 }

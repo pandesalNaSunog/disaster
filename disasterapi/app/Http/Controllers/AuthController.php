@@ -133,14 +133,4 @@ class AuthController extends Controller
             'token' => $token
         ], 200);
     }
-    public function pass(){
-        $user = User::where('id', 5)->first();
-
-        $user->update([
-            'password' => bcrypt('pass')
-        ]);
-        return response([
-            'message' => 'ok'
-        ],200);
-    }
 }
