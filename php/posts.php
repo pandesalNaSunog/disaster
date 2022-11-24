@@ -6,9 +6,11 @@
 
         if($_SERVER['REQUEST_METHOD'] == 'GET'){
             $query = "SELECT * FROM posts ORDER BY created_at DESC";
+            $idIncrement = 0;
         }else{
             $barangayId = htmlspecialchars($_POST['barangay_id']);
             $query = "SELECT * FROM posts WHERE barangay_id = '$barangayId' ORDER BY created_at DESC";
+            $idIncrement = 1;
         }
         
 
@@ -40,7 +42,8 @@
                 'id' => $postRow['id'],
                 'barangay' => $barangayName,
                 'lat' => $postRow['lat'],
-                'long' => $postRow['long']
+                'long' => $postRow['long'],
+                'map_id' => uniqid()
             );
         }
 

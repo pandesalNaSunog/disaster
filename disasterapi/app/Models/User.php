@@ -24,7 +24,8 @@ class User extends Authenticatable
         'user_type',
         'contact',
         'address',
-        'verified'
+        'verified',
+        'profile_image'
     ];
 
     /**

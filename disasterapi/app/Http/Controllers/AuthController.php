@@ -11,6 +11,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 use App\Models\User;
 use App\Models\OTP;
 use App\Models\Cred;
+use App\Models\Post;
 class AuthController extends Controller
 {
     public function register(Request $request){
@@ -86,6 +87,33 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function updateProfilePicture(Request $request){
+        $request->validate([
+            'image' => 'required'
+        ]);
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $user = User::where('id', $id)->first();
+
+        $image = base64_decode($request['image']);
+        $filename = uniqid() . ".jpg";
+        file_put_contents($filename, $image);
+
+        if($user->profile_image != null){
+            unlink($user->profile_image);
+        }
+
+        $user->update([
+            'profile_image' => $filename
+        ]);
+
+        
+
+        return response($user, 200);
+    }
+
     public function sendotp(Request $request){
         $request->validate([
             'otp' => 'required'
@@ -132,5 +160,99 @@ class AuthController extends Controller
         return response([
             'token' => $token
         ], 200);
+    }
+
+    public function profile(Request $request){
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $user = User::where('id', $id)->first();
+
+        if(!$user){
+            return response([
+                'message' => 'this user does not exist'
+            ], 400);
+        }
+        $reportNum = 0;
+        $caseClosed = 0;
+        $pending = 0;
+        $crewDispatched = 0;
+        $reports = Post::where('user_id', $id)->get();
+        foreach($reports as $report){
+            $reportNum++;
+
+            if($report->response == "case closed"){
+                $caseClosed++;
+            }else if($report->response == "Pending"){
+                $pending++;
+            }else if($report->response == "crew dispatched"){
+                $crewDispatched++;
+            }
+        }
+        return response([
+            'user' => $user,
+            'reports' => $reportNum,
+            'case_closed' => $caseClosed,
+            'crew_dispatched' => $crewDispatched,
+            'pending' => $pending
+        ]);
+    }
+
+    public function currentPassword(Request $request){
+        $request->validate([
+            'password' => 'required'
+        ]);
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $user = User::where('id', $id)->first();
+
+        if(!$user || !Hash::check($request['password'], $user->password)){
+            return response([
+                'message' => 'invalid'
+            ], 400);
+        }
+
+        return response($user, 200);
+    }
+
+    public function updateName(Request $request){
+        $request->validate([
+            'name' => 'required'
+        ]);
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $user = User::where('id', $id)->first();
+
+        $user->update([
+            'name' => $request['name'],
+        ]);
+
+        return response($user, 200);
+    }
+    public function updatePassword(Request $request){
+        $request->validate([
+            'password' => 'required'
+        ]);
+
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $user = User::where('id', $id)->first();
+
+        if(!$user){
+            return response([
+                'message' => 'not found'
+            ], 404);
+        }
+
+        $user->update([
+            'password' => bcrypt($request['password'])
+        ]);
+
+        return response($user, 200);
     }
 }

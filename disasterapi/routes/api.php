@@ -22,4 +22,9 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/post', [PostController::class, 'post']);
     Route::post('/otp', [AuthController::class, 'sendotp']);
     Route::get('/posts', [PostController::class, 'getPosts']);
+    Route::get('/profile', [AuthController::class, 'profile']);
+    Route::post('/update-profile-picture', [AuthController::class, 'updateProfilePicture']);
+    Route::post('/current-password', [AuthController::class, 'currentPassword']);
+    Route::post('/update-password', [AuthController::class, 'updatePassword']);
+    Route::post('/update-name', [AuthController::class, 'updateName']);
 });

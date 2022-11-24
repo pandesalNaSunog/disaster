@@ -109,7 +109,7 @@ class PostController extends Controller
 
             $barangay = Barangay::where('id', $barangayId)->first();
 
-            if($barangy){
+            if($barangay){
                 $barangayName = $barangay->barangay;
             }else{
                 $barangayName = "Unknown Barangay";

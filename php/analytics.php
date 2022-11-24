@@ -57,7 +57,7 @@
                 $categoryId = $categoryRow['id'];
                 $categoryColors[] = generateHexColor();
                 $number = 0;
-                $query = "SELECT * FROM posts WHERE disaster_category_id = '$categoryId' AND barangay_id = '$barangayId'";
+                $query = "SELECT * FROM posts WHERE disaster_category_id = '$categoryId' AND barangay_id = '$barangayId' AND created_at LIKE '$date%'";
                 $postQuery = $con->query($query) or die($con->error);
                 while($postRow = $postQuery->fetch_assoc()){
                     $number++;

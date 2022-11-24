@@ -331,7 +331,7 @@
                             viewReports.prop('disabled', false)
                             let data = JSON.parse(response);
                             $(data).each(function(index, value){
-                                addToPostsList('barangay-section', index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay, value.lat, value.long)
+                                addToPostsList('barangay-section', index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay, value.lat, value.long, value.map_id)
                             })
                             
                         }
@@ -568,9 +568,31 @@
                 categoriesTable.append(`<tr>
                                             <td>${category}</td>
                                             <td>
-
+                                                <button value=${id} class="edit btn btn-outline-light">Edit</button>
+                                                <button value=${id} class="delete btn btn-outline-light">Delete</button
                                             </td>
                                         </tr>`)
+                let deleteButton = categoriesTable.children().eq(index).find('.delete');
+                deleteButton.on('click', function(){
+                    let thisDelete = $(this);
+
+                    if(confirm("Delete this category? All incident reports associated with this category will also be deleted.") == true){
+                        deleteButton.prop('disabled', true);
+                        $.ajax({
+                            type: 'POST',
+                            url: 'php/deleteCategory.php',
+                            data:{
+                                category_id: thisDelete.val()
+                            },
+                            success: function(response){
+                                deleteButton.prop('disabled', false);
+                                if(response == 'ok'){
+                                    thisDelete.parent().parent().remove()
+                                }
+                            }
+                        })
+                    }
+                })
             }
             function getPosts(){
                 loadingScreen.show();
@@ -584,13 +606,13 @@
                         var data = JSON.parse(response);
 
                         $(data).each(function(index, value){
-                            addToPostsList('post-section',index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay,value.lat, value.long);
+                            addToPostsList('post-section',index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay,value.lat, value.long, value.map_id);
                         })
                     }
                 })
             }
 
-            function addToPostsList(section,index, id, user, caption, image, response, date, barangay, lat, long){
+            function addToPostsList(section,index, id, user, caption, image, response, date, barangay, lat, long, mapId){
                 var postContainer;
                 if(section == 'post-section'){
                     postContainer = postList;
@@ -612,7 +634,7 @@
                                         </svg><span class="ms-3">${barangay}</span></span>
                                     </div>
                                     <div class="card-body">
-                                        <div id="${id}" style="width:100%;height:200px;"></div>
+                                        <div id="${mapId}" style="width:100%;height:200px; color: black"></div>
                                         
                                         <p class="lead mt-3">${caption}</p>
 
@@ -640,7 +662,9 @@
                     };
 
                     var marker = new google.maps.Marker({position: new google.maps.LatLng(lat, long)});
-                    var map = new google.maps.Map(document.getElementById(id),mapProp);
+
+                    
+                    var map = new google.maps.Map(document.getElementById(mapId),mapProp);
                     marker.setMap(map)
                 }
 
@@ -1085,7 +1109,7 @@
     </section>
 
     <div class="modal fade" id="barangay-posts-modal" data-bs-backdrop="static">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header bg-dark text-light">
                     <div class="modal-title">
@@ -1094,7 +1118,7 @@
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body bg-dark text-light">
-                    <div id="barangay-post-list">
+                    <div id="barangay-post-list" class="row row-cols-1 row-cols-lg-3">
 
                     </div>
                 </div>
