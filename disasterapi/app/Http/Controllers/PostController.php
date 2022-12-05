@@ -123,9 +123,29 @@ class PostController extends Controller
                 'caption' => $caption,
                 'image' => $image,
                 'barangay' => $barangayName,
-                'response' => $postItem->response
+                'response' => $postItem->response,
+                'lat' => $postItem->lat,
+                'long' => $postItem->long
             ];
         }
+
+        return response($response, 200);
+    }
+
+    public function deletePost(Request $request){
+        $request->validate([
+            'post_id' => 'required'
+        ]);
+
+        $post = Post::where('id', $request['post_id'])->first();
+
+        if(!$post){
+            return response([
+                'message' => 'not exists'
+            ], 404);
+        }
+        unlink($post->image);
+        $response = $post->delete();
 
         return response($response, 200);
     }
