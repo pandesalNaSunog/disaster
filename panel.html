@@ -63,6 +63,39 @@
             let addCategoryError = $('#add-category-error');
             let confirmAddCategory = $('#confirm-add-category');
             let addCategoryModal = $('#add-category-modal');
+            let editCategoryText = $('#edit-category-text');
+            let confirmEditCategory = $('#confirm-edit-category');
+            let editCategoryTextError = $('#edit-category-text-error');
+            let globalCategoryId = 0;
+            let editCategoryModal = $('#edit-category-modal');
+
+
+            confirmEditCategory.click(function(){
+                if(editCategoryText.val() == ""){
+                    editCategoryText.addClass('is-invalid');
+                    editCategoryTextError.text('Please fill out this field');
+                }else{
+                    confirmEditCategory.prop('disabled', true);
+                    $.ajax({
+                        type: 'POST',
+                        url: 'php/updateCategory.php',
+                        data:{
+                            category_id: globalCategoryId,
+                            new_category: editCategoryText.val(),
+                        },
+                        success: function(response){
+                            confirmEditCategory.prop('disabled', false);
+                            if(response == 'ok'){
+                                getCategories();
+                                editCategoryText.val('');
+                                editCategoryModal.modal('hide');
+                            }
+                        }
+                    })
+                }
+            })
+
+
             confirmAddCategory.on('click', function(){
                 if(addCategoryInput.val() == ""){
                     addCategoryInput.addClass('is-invalid');
@@ -568,11 +601,17 @@
                 categoriesTable.append(`<tr>
                                             <td>${category}</td>
                                             <td>
-                                                <button value=${id} class="edit btn btn-outline-light">Edit</button>
+                                                <button value=${id} data-bs-target="#edit-category-modal" data-bs-toggle="modal" class="edit btn btn-outline-light">Edit</button>
                                                 <button value=${id} class="delete btn btn-outline-light">Delete</button
                                             </td>
                                         </tr>`)
                 let deleteButton = categoriesTable.children().eq(index).find('.delete');
+                let editButton = categoriesTable.children().eq(index).find('.edit');
+
+                editButton.click(function(){
+                    let thisEdit = $(this);
+                    globalCategoryId = thisEdit.val();
+                })
                 deleteButton.on('click', function(){
                     let thisDelete = $(this);
 
@@ -963,6 +1002,29 @@
             </div>
         </div>
     </section>
+
+    <div class="modal fade" id="edit-category-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <h3 class="fw-bold">Edit Category</h3>
+                    </div>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <input id="edit-category-text" type="text" class="form-control" placeholder="Category">
+                        <div id="edit-category-text-error" class="invalid-feedback">
+
+                        </div>
+                    </div>
+                    
+                    <button id="confirm-edit-category" class="btn btn-dark mt-3 w-100">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <section id="users-section">
