@@ -28,4 +28,5 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/update-password', [AuthController::class, 'updatePassword']);
     Route::post('/update-name', [AuthController::class, 'updateName']);
     Route::post('/delete-post', [PostController::class, 'deletePost']);
+    
 });

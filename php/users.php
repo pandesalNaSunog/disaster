@@ -16,6 +16,7 @@
                 'id' => $userRow['id'],
                 'address' => $userRow['address'],
                 'contact' => $userRow['contact'],
+                'approved' => $userRow['approved']
             );
         }
         echo json_encode($users);

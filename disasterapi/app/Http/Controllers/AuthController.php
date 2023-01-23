@@ -94,6 +94,62 @@ class AuthController extends Controller
         ], 200);
     }
 
+    public function forgotPassword(Request $request){
+        function generateOtp(){
+            $characters = "1234567890";
+            $otp = "";
+            for($i = 0; $i < 6; $i++){
+                $index = rand(0, strlen($characters) - 1);
+                $otp .= $characters[$index];
+                
+            }
+
+            return $otp;
+        }
+        $request->validate([
+            'email' => 'required'
+        ]);
+
+        $user = User::where('email', $request['email'])->first();
+
+        if(!$user){
+            return response([
+                'message' => 'email does not exist'
+            ], 400);
+        }
+
+        $otp = generateOtp();
+
+        $otpData = OTP::create([
+            'user_id' => $user->id,
+            'otp' => $otp
+        ]);
+
+        return response([
+            'message' => 'we have sent you otp'
+        ], 200);
+    }
+
+    public function forgotPasswordOTP(Request $request){
+        $request->validate([
+            'otp' => 'required'
+        ]);
+
+        $otp = OTP::where('otp', $request['otp'])->orderBy('id', 'desc')->first();
+
+        if(!$otp){
+            return response([
+                'message' => 'invalid otp'
+            ], 400);
+        }
+
+        $otp->delete();
+
+        return response([
+            'message' => 'you may now enter new password'
+        ], 200);
+    }
+
     public function updateProfilePicture(Request $request){
         $request->validate([
             'image' => 'required'
@@ -108,7 +164,7 @@ class AuthController extends Controller
         $filename = uniqid() . ".jpg";
         file_put_contents($filename, $image);
 
-        if($user->profile_image != null){
+        if($user->profile_image != null || $user->profile_image != ""){
             unlink($user->profile_image);
         }
 
@@ -118,7 +174,9 @@ class AuthController extends Controller
 
         
 
-        return response($user, 200);
+        return response([
+            'image' => $user->profile_image
+        ], 200);
     }
 
     public function sendotp(Request $request){
@@ -129,7 +187,7 @@ class AuthController extends Controller
         $token = PersonalAccessToken::findToken($request->bearerToken());
         $id = $token->tokenable->id;
 
-        $otp = OTP::where('user_id', $id)->where('otp', $request['otp'])->first();
+        $otp = OTP::where('user_id', $id)->where('otp', $request['otp'])->orderBy('id', 'desc')->first();
 
         if(!$otp){
             return response([
