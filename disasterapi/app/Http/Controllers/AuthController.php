@@ -33,7 +33,12 @@ class AuthController extends Controller
             'contact' => 'required',
             'address' => 'required',
             'password' => 'required',
+            'valid_id' => 'required',
         ]);
+
+        $validId = base64_decode($request['valid_id']);
+        $filename = uniqid() . ".jpg";
+        file_put_contents($filename, $validId);
 
         $creds = Cred::where('id', 1)->first();
 
@@ -43,8 +48,10 @@ class AuthController extends Controller
             'contact' => $request['contact'],
             'address' => $request['address'],
             'password' => bcrypt($request['password']),
+            'valid_id' => $filename,
             'user_type' => 'user',
-            'verified' => 'no'
+            'verified' => 'no',
+            'approved' => 'no',
         ]);
 
         $token = $user->createToken('myAppToken')->plainTextToken;
@@ -57,28 +64,28 @@ class AuthController extends Controller
 
         $mail = new PHPMailer(true);
 
-        $mail->SMTPDebug = 0;
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = $creds->email; 
-        $mail->Password = $creds->key; 
-        $mail->SMTPSecure = $creds->secure; 
-        $mail->Port = $creds->port ;
+        // $mail->SMTPDebug = 0;
+        // $mail->isSMTP();
+        // $mail->Host = 'smtp.gmail.com';
+        // $mail->SMTPAuth = true;
+        // $mail->Username = $creds->email; 
+        // $mail->Password = $creds->key; 
+        // $mail->SMTPSecure = $creds->secure; 
+        // $mail->Port = $creds->port ;
 
-        $mail->setFrom($creds->email, 'Exodus Search and Rescue, Inc.');
-        $mail->addAddress($request['email']);
-        $mail->isHTML(true);
+        // $mail->setFrom($creds->email, 'Exodus Search and Rescue, Inc.');
+        // $mail->addAddress($request['email']);
+        // $mail->isHTML(true);
 
-        $mail->Subject = 'One Time Password';
-        $mail->Body = 'Your OTP is ' . $otpText . ". Note that this can only be used once. Do not close the app or this information will not be valid anymore.";
+        // $mail->Subject = 'One Time Password';
+        // $mail->Body = 'Your OTP is ' . $otpText . ". Note that this can only be used once. Do not close the app or this information will not be valid anymore.";
 
-        if(!$mail->send()){
-            $user->delete();
-            return response ([
-                'message' => 'email is invalid'
-            ], 401);
-        }
+        // if(!$mail->send()){
+        //     $user->delete();
+        //     return response ([
+        //         'message' => 'email is invalid'
+        //     ], 401);
+        // }
 
         
 
@@ -149,7 +156,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request['email'])->where('user_type','<>','admin')->first();
 
-        if(!$user || !Hash::check($request['password'], $user->password) || $user->verified == 'no'){
+        if(!$user || !Hash::check($request['password'], $user->password) || $user->verified == 'no' || $user->approved == 'no'){
             return response([
                 'message' => 'account not found'
             ], 404);

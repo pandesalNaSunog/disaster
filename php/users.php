@@ -15,7 +15,7 @@
                 'email' => $userRow['email'],
                 'id' => $userRow['id'],
                 'address' => $userRow['address'],
-                'contact' => $userRow['contact']
+                'contact' => $userRow['contact'],
             );
         }
         echo json_encode($users);

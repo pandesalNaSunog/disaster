@@ -25,7 +25,9 @@ class User extends Authenticatable
         'contact',
         'address',
         'verified',
-        'profile_image'
+        'profile_image',
+        'valid_id',
+        'approved',
     ];
 
     /**
