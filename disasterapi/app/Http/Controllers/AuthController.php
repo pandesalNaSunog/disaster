@@ -64,28 +64,28 @@ class AuthController extends Controller
 
         $mail = new PHPMailer(true);
 
-        // $mail->SMTPDebug = 0;
-        // $mail->isSMTP();
-        // $mail->Host = 'smtp.gmail.com';
-        // $mail->SMTPAuth = true;
-        // $mail->Username = $creds->email; 
-        // $mail->Password = $creds->key; 
-        // $mail->SMTPSecure = $creds->secure; 
-        // $mail->Port = $creds->port ;
+        $mail->SMTPDebug = 0;
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = $creds->email; 
+        $mail->Password = $creds->key; 
+        $mail->SMTPSecure = $creds->secure; 
+        $mail->Port = $creds->port ;
 
-        // $mail->setFrom($creds->email, 'Exodus Search and Rescue, Inc.');
-        // $mail->addAddress($request['email']);
-        // $mail->isHTML(true);
+        $mail->setFrom($creds->email, 'Exodus Search and Rescue, Inc.');
+        $mail->addAddress($request['email']);
+        $mail->isHTML(true);
 
-        // $mail->Subject = 'One Time Password';
-        // $mail->Body = 'Your OTP is ' . $otpText . ". Note that this can only be used once. Do not close the app or this information will not be valid anymore.";
+        $mail->Subject = 'One Time Password';
+        $mail->Body = 'Your OTP is ' . $otpText . ". Note that this can only be used once. Do not close the app or this information will not be valid anymore.";
 
-        // if(!$mail->send()){
-        //     $user->delete();
-        //     return response ([
-        //         'message' => 'email is invalid'
-        //     ], 401);
-        // }
+        if(!$mail->send()){
+            $user->delete();
+            return response ([
+                'message' => 'email is invalid'
+            ], 401);
+        }
 
         
 
