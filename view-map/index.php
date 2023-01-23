@@ -8,7 +8,9 @@
         $query->bind_param('i', $postId);
         $query->execute();
         $result = $query->get_result();
-        $data = $result->fetch_assoc();
+        if(!($data = $result->fetch_assoc())){
+            header('Location: ../panel.html');
+        }
     }else{
         session_start();
         if(isset($_SESSION)){
