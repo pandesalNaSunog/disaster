@@ -16,7 +16,12 @@
 
         $posts = array();
         $post = $con->query($query) or die($con->error);
+        $unreadPosts = 0;
         while($postRow = $post->fetch_assoc()){
+
+            if($postRow['read'] == 'no'){
+                $unreadPosts++;
+            }
             $userId = $postRow['user_id'];
 
             $query = "SELECT name FROM users WHERE id = '$userId'";
@@ -43,11 +48,17 @@
                 'barangay' => $barangayName,
                 'lat' => $postRow['lat'],
                 'long' => $postRow['long'],
+                'read' => $postRow['read'],
                 'map_id' => uniqid()
             );
         }
 
-        echo json_encode($posts);
+        echo json_encode(
+            array(
+                'posts' => $posts,
+                'unread' => $unreadPosts
+            )
+        );
     }else{
         showError();
     }

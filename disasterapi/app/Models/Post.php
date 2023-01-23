@@ -16,6 +16,7 @@ class Post extends Model
         'response',
         'barangay_id',
         'disaster_category_id',
+        'read',
         'lat',
         'long'
     ];

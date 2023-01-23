@@ -68,6 +68,31 @@
             let editCategoryTextError = $('#edit-category-text-error');
             let globalCategoryId = 0;
             let editCategoryModal = $('#edit-category-modal');
+            let notifSound = $('#notif-sound');
+
+            function getNotifs(){
+                $.ajax({
+                    type: 'GET',
+                    url: 'php/notifs.php',
+                    success: function(response){
+                        setTimeout(function(){
+                            
+                            if(response != 0){
+                                notifSound[0].play();
+                                toastMessage.text('You have ' + response + ' new reports.');
+                                notifier.toast('show');
+                                notifier.toast({delay:5000});
+                            
+                            }
+                            console.log(response);
+                            getNotifs();
+                        }, 5000)
+                        
+                    }
+                        
+                })
+            }
+            getNotifs();
 
 
             confirmEditCategory.click(function(){
@@ -643,8 +668,8 @@
                     success: function(response){
                         loadingScreen.hide();
                         var data = JSON.parse(response);
-
-                        $(data).each(function(index, value){
+                        
+                        $(data.posts).each(function(index, value){
                             addToPostsList('post-section',index, value.id, value.user, value.caption, value.image, value.response, value.date, value.barangay,value.lat, value.long, value.map_id);
                         })
                     }
@@ -1188,6 +1213,12 @@
         </div>
     </div>
 
+    <audio src="notif.mp3" id="notif-sound">
+        
+        
+
+    </audio>
+
     <div class="modal fade" data-bs-backdrop="static" id="current-password-modal">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -1244,8 +1275,6 @@
             </div>
         </div>
     </div>
-
-    
     
 </body>
 </html>

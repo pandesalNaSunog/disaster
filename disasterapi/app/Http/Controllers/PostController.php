@@ -64,7 +64,8 @@ class PostController extends Controller
             'response' => 'Pending',
             'disaster_category_id' => $request['disaster_category_id'],
             'lat' => $request['lat'],
-            'long' => $request['long']
+            'long' => $request['long'],
+            'read' => 'no',
         ]);
 
         $user = User::where('id', $id)->first();
@@ -78,7 +79,8 @@ class PostController extends Controller
             'image' => $post->image,
             'response' => $post->response,
             'lat' => $post->lat,
-            'long' => $post->long
+            'long' => $post->long,
+            'read' => $post->read
         ];
 
         return response($response, 200);
@@ -125,7 +127,8 @@ class PostController extends Controller
                 'barangay' => $barangayName,
                 'response' => $postItem->response,
                 'lat' => $postItem->lat,
-                'long' => $postItem->long
+                'long' => $postItem->long,
+                'read' => $postItem->read
             ];
         }
 
