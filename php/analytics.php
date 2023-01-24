@@ -19,6 +19,7 @@
         }else{
             $year = htmlspecialchars($_POST['year']);
             $month = htmlspecialchars($_POST['month']);
+            $categoryId = htmlspecialchars($_POST['category_id']);
             $date = $year . '-' . $month;
         }
         $query = "SELECT * FROM barangays";
@@ -50,7 +51,12 @@
                 }
             }
 
-            $query = "SELECT * FROM disaster_categories";
+            if($categoryId == "all"){
+                $query = "SELECT * FROM disaster_categories";
+            }else{
+                $query = "SELECT * FROM disaster_categories WHERE id = '$categoryId'";
+            }
+            
             $categoryQuery = $con->query($query) or die($con->error);
             $categoryResponse = array();
             while($categoryRow = $categoryQuery->fetch_assoc()){

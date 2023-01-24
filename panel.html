@@ -76,6 +76,7 @@
             let validIdUserName = $('#valid-id-username');
             let validId = $('#valid-id');
             let printAnalytics = $('#print-analytics');
+            let analyticsCategories = $('#analytics-categories');
             printArea.hide();
             printAnalytics.hide();
             function getNotifs(){
@@ -254,6 +255,7 @@
                         data:{
                             year: analyticsYear.val(),
                             month: analyticsMonth.val(),
+                            category_id: analyticsCategories.val()
                         },
                         success: function(response){
                             generateAnalytics.prop('disabled', false);
@@ -385,6 +387,7 @@
                 settingsSection.hide();
                 analyticsSection.show();
                 categoriesSection.hide();
+                getCategoriesForAnalytics();
             })
 
             function getAnalytics(){
@@ -620,6 +623,29 @@
                     }
                 })
             }
+            function getCategoriesForAnalytics(){
+                loadingScreen.show()
+                categoriesTable.children().remove();
+                $.get({
+                    url: 'php/categories.php',
+                    success: function(response){
+                        let data = JSON.parse(response);
+                        loadingScreen.hide();
+                        $(data).each(function(index, value){
+                            addToCategoriesSelection(index, value.id, value.category)
+                        })
+                        analyticsCategories.append(`<option value="all">
+                                                All
+                                            </option>`)
+                    }
+                })
+            }
+
+            function addToCategoriesSelection(index, id, category){
+                analyticsCategories.append(`<option value="${id}">
+                                                ${category}
+                                            </option>`)
+            }
 
             function addToCategoriesTable(index, id, category){
                 categoriesTable.append(`<tr>
@@ -703,7 +729,7 @@
                                         
                                         <p class="lead mt-3">${caption}</p>
 
-                                        <div class="text-center"><img src="disasterapi/public/${image}" class="img-fluid"></div>
+                                        <div class="text-center"><img src="disasterapi/public/${image}" style="height: 200px; width: 100%; object-fit: cover" class="img-fluid"></div>
                                         <div class="input-group mt-3" style="width: 100%">
                                             <button value="${id}" class="case-closed col btn btn-outline-success"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
                                             <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
@@ -997,6 +1023,12 @@
                                 <option value="10">October</option>
                                 <option value="11">November</option>
                                 <option value="12">December</option>
+                            </select>
+                            
+
+                            <label for="" class="mt-3">Select Category</label>
+                            <select id="analytics-categories" class="form-select">
+
                             </select>
                             <button class="btn btn-secondary w-100 mt-3" id="generate-analytics">Generate Analytics</button>
                         </div>
