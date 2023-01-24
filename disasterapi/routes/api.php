@@ -18,6 +18,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/barangays', [PostController::class, 'barangays']);
 Route::get('/categories', [PostController::class, 'categories']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/post', [PostController::class, 'post']);
     Route::post('/otp', [AuthController::class, 'sendotp']);
@@ -28,5 +29,5 @@ Route::group(['middleware' => ['auth:sanctum']], function(){
     Route::post('/update-password', [AuthController::class, 'updatePassword']);
     Route::post('/update-name', [AuthController::class, 'updateName']);
     Route::post('/delete-post', [PostController::class, 'deletePost']);
-    
+    Route::post('/forgot-password-otp', [AuthController::class, 'forgotPasswordOTP']);
 });

@@ -125,8 +125,10 @@ class AuthController extends Controller
             'otp' => $otp
         ]);
 
+        $token = $user->createToken('myToken')->plainTextToken;
+
         return response([
-            'message' => 'we have sent you otp'
+            'token' => $token
         ], 200);
     }
 
@@ -135,15 +137,17 @@ class AuthController extends Controller
             'otp' => 'required'
         ]);
 
-        $otp = OTP::where('otp', $request['otp'])->orderBy('id', 'desc')->first();
+        $token = PersonalAccessToken::findToken($request->bearerToken());
+        $id = $token->tokenable->id;
+
+        $otp = OTP::where('user_id', $id)->where('otp', $request->otp)->first();
 
         if(!$otp){
             return response([
                 'message' => 'invalid otp'
             ], 400);
         }
-
-        $otp->delete();
+        $otp = OTP::where('user_id', $id)->delete();
 
         return response([
             'message' => 'you may now enter new password'
