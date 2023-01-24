@@ -6,9 +6,7 @@
     use PHPMailer\PHPMailer\SMTP;
     use PHPMailer\PHPMailer\Exception;
 
-    require 'vendor/PHPMailer/PHPMailer/src/Exception.php';
-    require 'vendor/PHPMailer/PHPMailer/src/PHPMailer.php';
-    require 'vendor/PHPMailer/PHPMailer/src/SMTP.php';
+
     require 'vendor/autoload.php';
     include('server.php');
     if(secured()){
