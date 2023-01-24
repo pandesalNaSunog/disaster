@@ -1,15 +1,15 @@
 <?php
-    require 'vendor/PHPMailer/PHPMailer/src/Exception.php';
-    require 'vendor/PHPMailer/PHPMailer/src/PHPMailer.php';
-    require 'vendor/PHPMailer/PHPMailer/src/SMTP.php';
-    require 'vendor/autoload.php';
+    
 
 
     use PHPMailer\PHPMailer\PHPMailer;
     use PHPMailer\PHPMailer\SMTP;
     use PHPMailer\PHPMailer\Exception;
 
-    
+    require 'vendor/PHPMailer/PHPMailer/src/Exception.php';
+    require 'vendor/PHPMailer/PHPMailer/src/PHPMailer.php';
+    require 'vendor/PHPMailer/PHPMailer/src/SMTP.php';
+    require 'vendor/autoload.php';
     include('server.php');
     if(secured()){
         function sendMail($con, $email){
@@ -19,7 +19,7 @@
             $creds = $result->fetch_assoc();
             $mail = new PHPMailer(true);
     
-            $mail->SMTPDebug = 2;
+            $mail->SMTPDebug = 0;
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
