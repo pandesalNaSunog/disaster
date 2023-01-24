@@ -35,7 +35,6 @@
             $mail->Subject = 'Account Approved';
             $mail->Body = 'Your account has been approved by the administrator. You may now proceed to log in.';
             $mail->send();
-            echo json_encode(array('creds' => $creds, 'email' => $email));
         }
 
         include('connection.php');
