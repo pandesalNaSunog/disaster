@@ -20,9 +20,15 @@
             $year = htmlspecialchars($_POST['year']);
             $month = htmlspecialchars($_POST['month']);
             $categoryId = htmlspecialchars($_POST['category_id']);
+            $barangayId = htmlspecialchars($_POST['barangay_id']);
             $date = $year . '-' . $month;
         }
-        $query = "SELECT * FROM barangays";
+        if($barangayId == "all"){
+            $query = "SELECT * FROM barangays";
+        }else{
+            $query = "SELECT * FROM barangays WHERE id = '$barangayId'";
+        }
+        
         $barangay = $con->query($query) or die($con->error);
         $response = array();
         $categoryColors = array();

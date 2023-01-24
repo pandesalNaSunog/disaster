@@ -77,6 +77,9 @@
             let validId = $('#valid-id');
             let printAnalytics = $('#print-analytics');
             let analyticsCategories = $('#analytics-categories');
+            let analyticsBarangays = $('#analytics-barangays');
+
+
             printArea.hide();
             printAnalytics.hide();
             function getNotifs(){
@@ -255,7 +258,8 @@
                         data:{
                             year: analyticsYear.val(),
                             month: analyticsMonth.val(),
-                            category_id: analyticsCategories.val()
+                            category_id: analyticsCategories.val(),
+                            barangay_id: analyticsBarangays.val()
                         },
                         success: function(response){
                             generateAnalytics.prop('disabled', false);
@@ -388,6 +392,7 @@
                 analyticsSection.show();
                 categoriesSection.hide();
                 getCategoriesForAnalytics();
+                getBarangaysForAnalytics();
             })
 
             function getAnalytics(){
@@ -625,7 +630,7 @@
             }
             function getCategoriesForAnalytics(){
                 loadingScreen.show()
-                categoriesTable.children().remove();
+                analyticsCategories.children().remove();
                 $.get({
                     url: 'php/categories.php',
                     success: function(response){
@@ -639,6 +644,28 @@
                                             </option>`)
                     }
                 })
+            }
+            function getBarangaysForAnalytics(){
+                loadingScreen.show()
+                analyticsBarangays.children().remove();
+                $.get({
+                    url: 'php/barangays.php',
+                    success: function(response){
+                        let data = JSON.parse(response);
+                        loadingScreen.hide();
+                        $(data).each(function(index, value){
+                            addToBarangaysSelection(index, value.id, value.barangay)
+                        })
+                        analyticsBarangays.append(`<option value="all">
+                                                All
+                                            </option>`)
+                    }
+                })
+            }
+            function addToBarangaysSelection(index, id, category){
+                analyticsBarangays.append(`<option value="${id}">
+                                                ${category}
+                                            </option>`)
             }
 
             function addToCategoriesSelection(index, id, category){
@@ -1025,6 +1052,10 @@
                                 <option value="12">December</option>
                             </select>
                             
+                            <label for="" class="mt-3">Select Barangay</label>
+                            <select id="analytics-barangays" class="form-select">
+                                
+                            </select>
 
                             <label for="" class="mt-3">Select Category</label>
                             <select id="analytics-categories" class="form-select">
